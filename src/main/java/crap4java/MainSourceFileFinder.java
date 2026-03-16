@@ -6,13 +6,13 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 
-final class SourceFileFinder {
+final class MainSourceFileFinder {
 
-    private SourceFileFinder() {
+    private MainSourceFileFinder() {
     }
 
     static List<Path> findAllJavaFilesUnderSrc(Path projectRoot) throws IOException {
-        Path src = projectRoot.resolve("src");
+        Path src = projectRoot.resolve("src/main");
         if (!Files.exists(src)) {
             return List.of();
         }

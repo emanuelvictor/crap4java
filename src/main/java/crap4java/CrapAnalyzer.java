@@ -30,7 +30,7 @@ final class CrapAnalyzer {
             List<MethodDescriptor> methods = JavaMethodParser.parse(className, source);
             for (MethodDescriptor method : methods) {
                 Double coverage = lookupCoverage(coverageMap, className, method.name(), method.startLine());
-                Double crap = CrapScore.calculate(method.complexity(), coverage);
+                Double crap = CrapScore.calculate(method.complexity(), coverage  == null ? 0.0 : coverage);
                 metrics.add(new MethodMetrics(method.name(), className, method.complexity(), coverage, crap));
             }
         }

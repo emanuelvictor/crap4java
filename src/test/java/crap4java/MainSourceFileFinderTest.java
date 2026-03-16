@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class SourceFileFinderTest {
+class MainSourceFileFinderTest {
 
     @TempDir
     Path tempDir;
@@ -25,7 +25,7 @@ class SourceFileFinderTest {
         Files.createDirectories(outOfSrc.getParent());
         Files.writeString(outOfSrc, "class Elsewhere {}\n");
 
-        List<Path> files = SourceFileFinder.findAllJavaFilesUnderSrc(tempDir);
+        List<Path> files = MainSourceFileFinder.findAllJavaFilesUnderSrc(tempDir);
 
         assertEquals(List.of(inSrc), files);
     }

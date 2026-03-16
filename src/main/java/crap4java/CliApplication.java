@@ -3,6 +3,7 @@ package crap4java;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -38,9 +39,12 @@ final class CliApplication {
         }
 
         List<MethodMetrics> metrics = analyzeByModule(filesToAnalyze);
-        metrics.sort(Comparator.comparing(MethodMetrics::crapScore,
-                Comparator.nullsLast(Comparator.reverseOrder())));
-        out.print(ReportFormatter.format(metrics));
+        metrics.sort(Comparator.comparing(MethodMetrics::crapScore, Comparator.nullsLast(Comparator.reverseOrder())));
+
+        final var formattedMetrics = ReportFormatter.format(metrics);
+        out.print(formattedMetrics);
+
+        HtmlReportGenerator.generate(metrics, projectRoot.resolve("crap4java-report.html"));
 
         double max = Main.maxCrap(metrics);
         if (thresholdExceeded(max)) {
@@ -85,7 +89,7 @@ final class CliApplication {
 
     private List<Path> filesForMode(CliArguments parsed) throws Exception {
         return switch (parsed.mode()) {
-            case ALL_SRC -> SourceFileFinder.findAllJavaFilesUnderSrc(projectRoot);
+            case ALL_SRC -> MainSourceFileFinder.findAllJavaFilesUnderSrc(projectRoot);
             case CHANGED_SRC -> ChangedFileDetector.changedJavaFilesUnderSrc(projectRoot);
             case EXPLICIT_FILES -> explicitFiles(parsed.fileArgs());
             case HELP -> List.of();
@@ -97,7 +101,7 @@ final class CliApplication {
         for (String arg : args) {
             Path path = projectRoot.resolve(arg).normalize();
             if (Files.isDirectory(path)) {
-                files.addAll(SourceFileFinder.findAllJavaFilesUnderSrc(path));
+                files.addAll(MainSourceFileFinder.findAllJavaFilesUnderSrc(path));
             } else {
                 files.add(path);
             }

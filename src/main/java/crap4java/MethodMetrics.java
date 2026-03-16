@@ -3,10 +3,15 @@ package crap4java;
 record MethodMetrics(
         String methodName,
         String className,
-        int complexity,
+        Integer complexity,
         Double coveragePercent,
         Double crapScore
 ) {
+
+    @Override
+    public Double coveragePercent() {
+        return coveragePercent == null ? 0.0 : coveragePercent;
+    }
 }
 
 /* mutate4java-manifest
