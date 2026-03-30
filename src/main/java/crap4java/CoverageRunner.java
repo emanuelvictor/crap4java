@@ -3,6 +3,7 @@ package crap4java;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -18,16 +19,32 @@ final class CoverageRunner {
         deleteIfExists(projectRoot.resolve("target/site/jacoco"));
         deleteIfExists(projectRoot.resolve("target/jacoco.exec"));
 
-        int exit = executor.run(List.of(
-                "cmd", "/c",
+        List<String> baseCommand = List.of(
                 "mvn", "-q",
                 "org.jacoco:jacoco-maven-plugin:0.8.13:prepare-agent",
                 "test",
                 "org.jacoco:jacoco-maven-plugin:0.8.13:report"
-        ), projectRoot);
+        );
+
+        int exit = executor.run(buildCommand(baseCommand), projectRoot);
+
         if (exit != 0) {
             throw new IllegalStateException("Coverage command failed with exit " + exit);
         }
+    }
+
+    private List<String> buildCommand(List<String> baseCommand) {
+        String os = System.getProperty("os.name").toLowerCase();
+
+        if (os.contains("win")) {
+            List<String> cmd = new ArrayList<>();
+            cmd.add("cmd");
+            cmd.add("/c");
+            cmd.addAll(baseCommand);
+            return cmd;
+        }
+
+        return baseCommand; // Linux / Mac doesn't need cmd
     }
 
     private void deleteIfExists(Path path) throws IOException {

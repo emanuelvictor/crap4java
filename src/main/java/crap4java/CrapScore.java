@@ -13,6 +13,15 @@ final class CrapScore {
         double uncovered = 1.0 - (coveragePercent / 100.0);
         return (cc * cc * uncovered * uncovered * uncovered) + cc;
     }
+
+    static Double calculate(Double complexity, Double coveragePercent) {
+        if (coveragePercent == null) {
+            return null;
+        }
+        double cc = complexity;
+        double uncovered = 1.0 - (coveragePercent / 100.0);
+        return (cc * cc * uncovered * uncovered * uncovered) + cc;
+    }
 }
 
 /* mutate4java-manifest

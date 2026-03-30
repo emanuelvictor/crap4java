@@ -3,7 +3,6 @@ package crap4java;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -38,15 +37,15 @@ final class CliApplication {
             return 0;
         }
 
-        List<MethodMetrics> metrics = analyzeByModule(filesToAnalyze);
-        metrics.sort(Comparator.comparing(MethodMetrics::crapScore, Comparator.nullsLast(Comparator.reverseOrder())));
+        List<MethodMetrics> methodMetrics = analyzeByModule(filesToAnalyze);
+        methodMetrics.sort(Comparator.comparing(MethodMetrics::crapScore, Comparator.nullsLast(Comparator.reverseOrder())));
 
-        final var formattedMetrics = ReportFormatter.format(metrics);
-        out.print(formattedMetrics);
+        out.print(ReportFormatter.format(methodMetrics));
 
-        HtmlReportGenerator.generate(metrics, projectRoot.resolve("crap4java-report.html"));
+        List<ClassMetrics> classMetrics = createClassMetricsFromMethodsMetrics(methodMetrics);
+        HtmlClassMetricsReportGenerator.generate(classMetrics, projectRoot.resolve("crap4java-class-metrics-report.html"));
 
-        double max = Main.maxCrap(metrics);
+        double max = Main.maxCrap(methodMetrics);
         if (thresholdExceeded(max)) {
             err.printf("CRAP threshold exceeded: %.1f > 8.0%n", max);
             return 2;
@@ -66,6 +65,20 @@ final class CliApplication {
             metrics.addAll(CrapAnalyzer.analyze(moduleRoot, entry.getValue(), jacocoXml));
         }
         return metrics;
+    }
+
+    private static List<ClassMetrics> createClassMetricsFromMethodsMetrics(List<MethodMetrics> methodMetrics) {
+        final Map<String, List<MethodMetrics>> methodsByClass = new LinkedHashMap<>();
+        for (MethodMetrics method : methodMetrics) {
+            methodsByClass.computeIfAbsent(method.className(), ignored -> new ArrayList<>()).add(method);
+        }
+        final List<ClassMetrics> classMetrics = new ArrayList<>();
+        for (Map.Entry<String, List<MethodMetrics>> entry : methodsByClass.entrySet()) {
+            String className = entry.getKey();
+            List<MethodMetrics> methods = entry.getValue();
+            classMetrics.add(new ClassMetrics(className, methods));
+        }
+        return classMetrics;
     }
 
     static boolean thresholdExceeded(double max) {

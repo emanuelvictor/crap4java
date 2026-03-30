@@ -8,10 +8,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-public class HtmlReportGenerator {
+public class HtmlMethodMetricsReportGenerator {
 
     public static void generate(List<MethodMetrics> metrics, Path output) throws IOException {
-        Stats stats = Stats.from(metrics);
+        MethodsStats methodsStats = MethodsStats.from(metrics);
         StringBuilder sb = new StringBuilder();
 
         sb.append("""
@@ -31,7 +31,7 @@ public class HtmlReportGenerator {
                         .crappy { background: #ffe0e0; }
                         .warn   { background: #fff8e1; }
                         .ok     { background: #e8f5e9; }
-                        .stats-grid {
+                        .methodsStats-grid {
                             display: grid;
                             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
                             gap: 1rem;
@@ -59,7 +59,7 @@ public class HtmlReportGenerator {
 
         // --- Stats cards ---
         sb.append(String.format("""
-                            <div class="stats-grid">
+                            <div class="methodsStats-grid">
                                 <div class="card"><div class="label">Total Methods</div><div class="value">%d</div></div>
                                 <div class="card red"><div class="label">Crappy (&gt; 15)</div><div class="value">%d</div></div>
                                 <div class="card yellow"><div class="label">Warning (8–15)</div><div class="value">%d</div></div>
@@ -68,13 +68,13 @@ public class HtmlReportGenerator {
                                 <div class="card"><div class="label">Avg Coverage</div><div class="value">%.1f%%</div></div>
                                 <div class="card"><div class="label">Avg Complexity</div><div class="value">%.1f</div></div>
                             </div>
-                             <div class="stats-grid">
+                             <div class="methodsStats-grid">
                                 <div class="card red"><div class="label">Worst Method</div><div class="value" style="font-size:0.95rem">%s</div></div>
                             </div>
                         """,
-                stats.total, stats.crappy, stats.warn, stats.ok,
-                stats.avgCrap, stats.avgCoverage, stats.avgComplexity,
-                stats.worstMethod
+                methodsStats.total, methodsStats.crappy, methodsStats.warn, methodsStats.ok,
+                methodsStats.avgCrap, methodsStats.avgCoverage, methodsStats.avgComplexity,
+                methodsStats.worstMethod
         ));
 
         // --- Legend ---
@@ -171,12 +171,12 @@ public class HtmlReportGenerator {
         return "ok";
     }
 
-    private record Stats(
+    private record MethodsStats(
             int total, int crappy, int warn, int ok,
             double avgCrap, double avgCoverage, double avgComplexity,
             String worstMethod
     ) {
-        static Stats from(List<MethodMetrics> metrics) {
+        static MethodsStats from(List<MethodMetrics> metrics) {
             int total = metrics.size();
             int crappy = (int) metrics.stream().filter(Objects::nonNull)
                     .filter(m -> m.crapScore() != null).filter(m -> m.crapScore() > 15).count();
@@ -197,7 +197,7 @@ public class HtmlReportGenerator {
                     .max(Comparator.comparingDouble(MethodMetrics::crapScore))
                     .map(m -> m.className() + "." + m.methodName())
                     .orElse("N/A");
-            return new Stats(total, crappy, warn, ok, avgCrap, avgCoverage, avgComplexity, worstMethod);
+            return new MethodsStats(total, crappy, warn, ok, avgCrap, avgCoverage, avgComplexity, worstMethod);
         }
     }
 }
