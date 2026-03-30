@@ -2,6 +2,7 @@ package crap4java;
 
 import java.io.PrintStream;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 
 public final class Main {
@@ -40,6 +41,16 @@ public final class Main {
         for (MethodMetrics metric : metrics) {
             if (metric.crapScore() != null) {
                 max = Math.max(max, metric.crapScore());
+            }
+        }
+        return max;
+    }
+
+    static double maxCrap(Collection<ClassMetrics> metrics) {
+        double max = 0.0;
+        for (ClassMetrics metric : metrics) {
+            if (metric.getCrapScore() != null) {
+                max = Math.max(max, metric.getCrapScore());
             }
         }
         return max;

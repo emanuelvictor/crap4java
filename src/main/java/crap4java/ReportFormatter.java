@@ -9,28 +9,36 @@ final class ReportFormatter {
     private ReportFormatter() {
     }
 
-    static String format(List<MethodMetrics> entries) {
-        List<MethodMetrics> sorted = new ArrayList<>(entries);
-        sorted.sort(Comparator
-                .comparing((MethodMetrics e) -> e.crapScore() == null)
-                .thenComparing(e -> e.crapScore() == null ? 0.0 : -e.crapScore()));
+    static String format(List<ClassMetrics> classMetrics) {
+        final var builder = new StringBuilder();
+        builder.append("CRAP Report:").append("\n");
+        classMetrics.forEach(classMetric -> {
+            final var sorted = new ArrayList<>(classMetric.getMethodMetrics());
+            sorted.sort(Comparator
+                    .comparing((MethodMetrics e) -> e.crapScore() == null)
+                    .thenComparing(e -> e.crapScore() == null ? 0.0 : -e.crapScore()));
 
-        String header = String.format("%-30s %-35s %4s %7s %8s", "Method", "Class", "CC", "Cov%", "CRAP");
-        String separator = "-".repeat(header.length());
-        StringBuilder builder = new StringBuilder();
-        builder.append("CRAP Report\n");
-        builder.append("===========\n");
-        builder.append(header).append('\n');
-        builder.append(separator).append('\n');
+            final var header = String.format("%-75s %4s %14s %8s", "Method", "CC", "Coverage%", "CRAP");
+            final var separator = "-".repeat(header.length());
 
-        for (MethodMetrics entry : sorted) {
-            builder.append(String.format("%-30s %-35s %4d %7s %8s%n",
-                    entry.methodName(),
-                    entry.className(),
-                    entry.complexity(),
-                    formatCoverage(entry.coveragePercent()),
-                    formatCrap(entry.crapScore())));
-        }
+            builder.append("\n");
+            builder.append(separator).append('\n');
+            builder.append("Class: ").append(classMetric.getClassName()).append("\n");
+            builder.append(separator).append('\n');
+            builder.append(header).append('\n');
+            builder.append(separator).append('\n');
+
+            for (MethodMetrics entry : sorted) {
+                builder.append(String.format("%-75s %4d %14s %8s%n",
+                        entry.methodName(),
+                        entry.complexity(),
+                        formatCoverage(entry.coveragePercent()),
+                        formatCrap(entry.crapScore())));
+            }
+            builder.append(separator).append('\n');
+            builder.append("\n");
+        });
+
 
         return builder.toString();
     }

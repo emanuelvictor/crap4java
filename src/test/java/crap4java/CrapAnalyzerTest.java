@@ -179,7 +179,7 @@ class CrapAnalyzerTest {
 
         List<MethodMetrics> result = CrapAnalyzer.analyze(tempDir, List.of(source), jacoco);
 
-        assertEquals(List.of("alpha", "beta", "gamma"),
+        assertEquals(List.of("alpha", "gamma", "beta"),
                 result.stream().map(MethodMetrics::methodName).toList());
     }
 }

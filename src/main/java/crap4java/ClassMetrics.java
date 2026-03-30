@@ -6,14 +6,14 @@ import java.util.Objects;
 public class ClassMetrics {
 
     private final String className;
-    private final Double sumOfCoverage;
+    private final Double averageOfCoverage;
     private final Double sumOfCrapScore;
     private final Double sumOfComplexity;
     private final List<MethodMetrics> methodMetrics;
 
     public ClassMetrics(String className, List<MethodMetrics> methodMetrics) {
         this.className = className;
-        this.sumOfCoverage = sumOfCoverage(methodMetrics);
+        this.averageOfCoverage = getAverageOfCoverage(methodMetrics);
         this.sumOfCrapScore = sumCrapScore(methodMetrics);
         this.sumOfComplexity = sumComplexity(methodMetrics);
         this.methodMetrics = methodMetrics;
@@ -35,14 +35,12 @@ public class ClassMetrics {
                 .sum();
     }
 
-    private static Double sumOfCoverage(List<MethodMetrics> methodMetrics) {
-        Double coverage = 100.0;
-        for (MethodMetrics methodMetric : methodMetrics) {
-            if (methodMetric.coveragePercent() < coverage) {
-                coverage = coverage - (100.0 - methodMetric.coveragePercent());
-            }
-        }
-        return coverage;
+    private static Double getAverageOfCoverage(List<MethodMetrics> methodMetrics) {
+        return methodMetrics.stream()
+                .map(MethodMetrics::coveragePercent)
+                .filter(Objects::nonNull)
+                .mapToDouble(complexity -> complexity)
+                .average().orElse(0.0);
     }
 
     public Double getSumOfCrapScore() {
@@ -62,8 +60,11 @@ public class ClassMetrics {
         return methodMetrics;
     }
 
-    public  Double getSumOfCoverage() {
-        return sumOfCoverage;
+    public Double getAverageOfCoverage() {
+        return averageOfCoverage;
     }
 
+    public Double getCrapScore() {
+        return sumOfCrapScore;
+    }
 }

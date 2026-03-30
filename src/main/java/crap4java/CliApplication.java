@@ -3,13 +3,7 @@ package crap4java;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 final class CliApplication {
 
@@ -37,17 +31,24 @@ final class CliApplication {
             return 0;
         }
 
-        List<MethodMetrics> methodMetrics = analyzeByModule(filesToAnalyze);
+        final var methodMetrics = analyzeByModule(filesToAnalyze);
         methodMetrics.sort(Comparator.comparing(MethodMetrics::crapScore, Comparator.nullsLast(Comparator.reverseOrder())));
+        final var classMetrics = createClassMetricsFromMethodsMetrics(methodMetrics);
 
-        out.print(ReportFormatter.format(methodMetrics));
+        out.print(ReportFormatter.format(classMetrics));
 
-        List<ClassMetrics> classMetrics = createClassMetricsFromMethodsMetrics(methodMetrics);
-        HtmlClassMetricsReportGenerator.generate(classMetrics, projectRoot.resolve("crap4java-class-metrics-report.html"));
+        HtmlClassMetricsReportGenerator.generate(classMetrics, projectRoot.resolve("crap4java-report.html"));
 
-        double max = Main.maxCrap(methodMetrics);
-        if (thresholdExceeded(max)) {
-            err.printf("CRAP threshold exceeded: %.1f > 8.0%n", max);
+        final var methodMax = Main.maxCrap(methodMetrics);
+        final var classMax = Main.maxCrap(classMetrics);
+        if(thresholdExceeded(classMax) || thresholdExceeded(methodMax)) {
+            if (thresholdExceeded(methodMax)) {
+                err.printf("CRAP method threshold exceeded: %.1f > 8.0%n", methodMax);
+            }
+
+            if (thresholdExceeded(classMax)) {
+                err.printf("CRAP class threshold exceeded: %.1f > 30.0%n", classMax);
+            }
             return 2;
         }
         return 0;
