@@ -61,7 +61,7 @@ public class HtmlClassMetricsReportGenerator {
                     </style>
                 </head>
                 <body>
-                    <h1>CRAP Report — By Class</h1>
+                    <h1>CRAP Report</h1>
                 """);
 
         // --- Stats cards ---
