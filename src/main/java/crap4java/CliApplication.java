@@ -83,7 +83,7 @@ final class CliApplication {
     }
 
     static boolean thresholdExceeded(double max) {
-        return Double.compare(max, 8.0) > 0;
+        return Double.compare(max, 30) > 0;
     }
 
     private ParseOutcome parseArguments(String[] args) {
